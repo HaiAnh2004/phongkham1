@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Lịch Hẹn - Phòng Khám</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0061f2;
+            --primary-light: #e0eaff;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --bg: #f8fafc;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 28px;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 30px;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+            background-color: #fafafa;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: #fff;
+            box-shadow: 0 0 0 4px rgba(0, 97, 242, 0.1);
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background: #0052cc;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 97, 242, 0.2);
+        }
+
+        .btn-refresh {
+            background: var(--primary-light);
+            color: var(--primary);
+            width: auto;
+            padding: 12px 20px;
+            font-size: 14px;
+            margin-top: 0;
+            box-shadow: none;
+        }
+        
+        .btn-refresh:hover {
+            background: #cce0ff;
+            transform: none;
+        }
+
+        .apt-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .apt-item {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .apt-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            background: var(--warning);
+        }
+
+        .apt-item:hover {
+            border-color: var(--warning);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1);
+            transform: translateX(4px);
+        }
+
+        .apt-time {
+            background: #fffbeb;
+            color: #d97706;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 16px;
+            text-align: center;
+            min-width: 60px;
+        }
+
+        .apt-info {
+            flex: 1;
+        }
+
+        .apt-name {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--text-main);
+        }
+
+        .apt-note {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            font-style: italic;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px dashed var(--border);
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>📅 Quản Lý Lịch Hẹn</h1>
+        <div style="display: flex; gap: 10px;">
+            <a href="dashboard.html" class="btn btn-refresh">🏠 TRANG CHỦ</a>
+            <button class="btn btn-refresh" onclick="loadAppointments()">🔄 Làm Mới Dữ Liệu</button>
+        </div>
+    </div>
+
+    <div class="grid-layout">
+        <div class="card">
+            <div class="card-title">📝 Thêm Lịch Hẹn Mới</div>
+            
+            <div class="form-group">
+                <label>Họ và Tên bệnh nhân <span style="color:red">*</span></label>
+                <input type="text" id="apt_name" placeholder="Ví dụ: Nguyễn Văn A">
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label>Số điện thoại</label>
+                    <input type="tel" id="apt_phone" placeholder="0909...">
+                </div>
+                <div class="form-group">
+                    <label>Giờ hẹn <span style="color:red">*</span></label>
+                    <input type="time" id="apt_time">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Lý do khám / Ghi chú</label>
+                <textarea id="apt_note" rows="3" placeholder="Ví dụ: Tái khám, Đau dạ dày..."></textarea>
+            </div>
+
+            <button class="btn" id="btn_submit" onclick="saveAppointment()">XÁC NHẬN ĐẶT LỊCH</button>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                🕒 Lịch Hẹn Hôm Nay 
+                <span id="apt_count" style="background: var(--primary); color: white; padding: 2px 10px; border-radius: 20px; font-size: 13px; margin-left: 10px;">0</span>
+            </div>
+            
+            <div class="apt-list" id="appointmentList">
+                <div class="empty-state">Đang tải lịch hẹn từ hệ thống...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx3N3S7CKPWVs-izPGcahyw-6DDM4yvNpIlpQyDR9ad0qVpylBbX4Yf2NJ3CQ-4BJYx/exec";
+
+    function formatSheetsTime(timeString) {
+        if (!timeString) return "--:--";
+        let str = timeString.toString();
+        
+        // Nếu là định dạng ISO của Google Sheets (1899-12-30T...)
+        if (str.includes('T')) {
+            const timePart = str.split('T')[1];
+            return timePart.substring(0, 5); // Lấy HH:mm
+        }
+        
+        // Nếu là định dạng bình thường, dùng regex lọc
+        const match = str.match(/\d{2}:\d{2}/);
+        return match ? match[0] : str;
+    }
+
+    async function loadAppointments() {
+        if (WEB_APP_URL.includes("DÁN_LINK")) return;
+        
+        const aptList = document.getElementById('appointmentList');
+        const aptCount = document.getElementById('apt_count');
+        
+        aptList.innerHTML = `<div class="empty-state">Đang kết nối tải dữ liệu...</div>`;
+        
+        try {
+            const res = await fetch(WEB_APP_URL + "?t=" + new Date().getTime());
+            const data = await res.json();
+            
+            const lichHen = data.lich || [];
+            aptCount.innerText = lichHen.length;
+            
+            if (lichHen.length > 0) {
+                aptList.innerHTML = "";
+                
+                // Chuẩn hóa thời gian trước khi sắp xếp
+                lichHen.forEach(apt => {
+                    apt.time = formatSheetsTime(apt.time);
+                });
+
+                lichHen.sort((a, b) => a.time.localeCompare(b.time));
+                
+                lichHen.forEach(apt => {
+                    let displayNote = apt.note || "Không có ghi chú";
+                    let phoneStr = "";
+                    if (displayNote.includes(" | SĐT: ")) {
+                        let parts = displayNote.split(" | SĐT: ");
+                        displayNote = parts[0];
+                        phoneStr = `<div style="color: var(--primary); font-weight: 600; margin-top: 4px;">📞 ${parts[1]}</div>`;
+                    }
+
+                    aptList.innerHTML += `
+                        <div class="apt-item">
+                            <div class="apt-time">${apt.time}</div>
+                            <div class="apt-info">
+                                <div class="apt-name">${apt.name}</div>
+                                <div class="apt-note">${displayNote}</div>
+                                ${phoneStr}
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                aptList.innerHTML = `<div class="empty-state">Hôm nay phòng khám chưa có lịch hẹn nào.</div>`;
+            }
+        } catch (e) {
+            aptList.innerHTML = `<div class="empty-state" style="color: red;">❌ Lỗi kết nối đến Google Sheets!</div>`;
+        }
+    }
+
+    async function saveAppointment() {
+        const name = document.getElementById('apt_name').value.trim();
+        const phone = document.getElementById('apt_phone').value.trim();
+        const time = document.getElementById('apt_time').value;
+        let note = document.getElementById('apt_note').value.trim();
+        const btn = document.getElementById('btn_submit');
+
+        if (!name || !time) {
+            alert("Bác sĩ vui lòng điền Tên bệnh nhân và Giờ hẹn nhé!");
+            return;
+        }
+
+        if (phone) {
+            note = note ? `${note} | SĐT: ${phone}` : `SĐT: ${phone}`;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = "⏳ Đang gửi yêu cầu...";
+
+        try {
+            await fetch(WEB_APP_URL, {
+                method: "POST",
+                mode: "no-cors",
+                body: JSON.stringify({ 
+                    type: "APPOINTMENT", 
+                    name: name, 
+                    time: time, 
+                    note: note 
+                })
+            });
+            
+            alert("✅ Đã đặt lịch hẹn thành công!");
+            document.getElementById('apt_name').value = "";
+            document.getElementById('apt_phone').value = "";
+            document.getElementById('apt_time').value = "";
+            document.getElementById('apt_note').value = "";
+            loadAppointments();
+            
+        } catch (e) {
+            alert("❌ Lỗi khi lưu lịch hẹn!");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = "XÁC NHẬN ĐẶT LỊCH";
+        }
+    }
+
+    window.onload = loadAppointments;
+</script>
+
+</body>
+</html>

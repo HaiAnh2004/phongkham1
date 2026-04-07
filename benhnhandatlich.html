@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Đặt Lịch Khám Bệnh</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0061f2;
+            --success: #10b981;
+            --bg: #f0fdf4;
+            --text-main: #1e293b;
+            --border: #cbd5e1;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .booking-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 450px;
+            border-radius: 24px;
+            padding: 30px 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        .header-logo { text-align: center; margin-bottom: 25px; }
+        .header-logo h2 { color: var(--primary); margin: 0; font-size: 24px; }
+        .header-logo p { color: #64748b; font-size: 14px; margin-top: 5px; }
+
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: #475569; }
+
+        input, select, textarea {
+            width: 100%; padding: 15px; border: 1.5px solid var(--border); border-radius: 12px;
+            font-size: 16px; font-family: 'Inter', sans-serif; box-sizing: border-box;
+            background-color: #f8fafc; transition: all 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none; border-color: var(--primary); background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(0, 97, 242, 0.1);
+        }
+
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+        .btn-submit {
+            background: var(--primary); color: white; border: none; padding: 18px; border-radius: 14px;
+            font-size: 16px; font-weight: 700; width: 100%; cursor: pointer; transition: 0.3s; margin-top: 10px;
+        }
+        .btn-submit:hover { background: #0052cc; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 97, 242, 0.25); }
+        .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        #success_screen { display: none; text-align: center; padding: 20px 0; }
+        .check-icon { font-size: 60px; color: var(--success); margin-bottom: 15px; }
+        .loading-text { color: var(--primary); font-size: 14px; text-align: center; margin-bottom: 15px; font-weight: 600; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="booking-card">
+    <div id="booking_form">
+        <div class="header-logo">
+            <h2>ĐẶT LỊCH KHÁM</h2>
+            <p>Vui lòng điền thông tin để đăng ký khám bệnh</p>
+        </div>
+
+        <div id="loading_msg" class="loading-text">⏳ Đang tải các khung giờ trống...</div>
+
+        <div class="form-group">
+            <label>Họ và Tên <span style="color:red">*</span></label>
+            <input type="text" id="p_name" placeholder="Ví dụ: Nguyễn Văn A">
+        </div>
+
+        <div class="form-group">
+            <label>Số điện thoại <span style="color:red">*</span></label>
+            <input type="tel" id="p_phone" placeholder="Nhập số điện thoại của bạn">
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label>Ngày Khám <span style="color:red">*</span></label>
+                <input type="date" id="p_date" onchange="loadAvailableTimes()">
+            </div>
+            <div class="form-group">
+                <label>Giờ Khám <span style="color:red">*</span></label>
+                <select id="p_time" disabled>
+                    <option value="">-- Đang tải... --</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Triệu chứng / Ghi chú</label>
+            <textarea id="p_note" rows="3" placeholder="Bạn đang cảm thấy thế nào?"></textarea>
+        </div>
+
+        <button class="btn-submit" id="btn_submit" onclick="submitBooking()" disabled>XÁC NHẬN ĐẶT LỊCH</button>
+    </div>
+
+    <div id="success_screen">
+        <div class="check-icon">✅</div>
+        <h2 style="color: var(--success); margin-bottom: 10px;">Đặt Lịch Thành Công!</h2>
+        <p style="color: #64748b; line-height: 1.6;">Thông tin của bạn đã được gửi tới phòng khám. Vui lòng đến đúng giờ và ngày đã hẹn.</p>
+        <button class="btn-submit" style="background: #f1f5f9; color: #475569; margin-top: 20px;" onclick="location.reload()">Đặt thêm lịch mới</button>
+    </div>
+</div>
+
+<script>
+    const WEB_APP_URL = "ttps://script.google.com/macros/s/AKfycbx3N3S7CKPWVs-izPGcahyw-6DDM4yvNpIlpQyDR9ad0qVpylBbX4Yf2NJ3CQ-4BJYx/exec";
+
+    const TIME_SLOTS = [
+        "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00",
+        "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00"
+    ];
+
+    let allAppointments = [];
+
+    function formatSheetsTime(timeString) {
+        if (!timeString) return "";
+        let str = timeString.toString();
+        if (str.includes('T')) {
+            return str.split('T')[1].substring(0, 5);
+        }
+        const match = str.match(/\d{2}:\d{2}/);
+        return match ? match[0] : str;
+    }
+
+    function setDefaultDate() {
+        const dateInput = document.getElementById('p_date');
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const todayStr = `${yyyy}-${mm}-${dd}`;
+        
+        dateInput.min = todayStr;
+        dateInput.value = todayStr;
+    }
+
+    function renderTimeOptions() {
+        const timeSelect = document.getElementById('p_time');
+        const selectedDate = document.getElementById('p_date').value;
+        
+        timeSelect.innerHTML = '<option value="">-- Chọn giờ trống --</option>';
+
+        const bookedTimesForDate = allAppointments
+            .filter(apt => apt.date === selectedDate)
+            .map(apt => formatSheetsTime(apt.time));
+
+        TIME_SLOTS.forEach(slot => {
+            const option = document.createElement('option');
+            option.value = slot;
+            if (bookedTimesForDate.includes(slot)) {
+                option.text = `${slot} (Đã kín chỗ)`;
+                option.disabled = true;
+            } else {
+                option.text = `${slot}`;
+            }
+            timeSelect.appendChild(option);
+        });
+
+        timeSelect.disabled = false;
+        document.getElementById('btn_submit').disabled = false;
+        document.getElementById('loading_msg').style.display = 'none';
+    }
+
+    async function loadAvailableTimes() {
+        const loadingMsg = document.getElementById('loading_msg');
+        loadingMsg.style.display = 'block';
+        document.getElementById('p_time').disabled = true;
+
+        if (WEB_APP_URL.includes("DÁN_LINK")) {
+            const testDate = document.getElementById('p_date').value;
+            allAppointments = [
+                { date: testDate, time: "08:30" },
+                { date: testDate, time: "14:00" }
+            ];
+            renderTimeOptions();
+            return;
+        }
+
+        try {
+            const res = await fetch(WEB_APP_URL + "?t=" + new Date().getTime());
+            const data = await res.json();
+            allAppointments = data.lich || [];
+            renderTimeOptions();
+        } catch (e) {
+            loadingMsg.innerText = "❌ Lỗi mạng. Không thể tải danh sách giờ trống!";
+            loadingMsg.style.color = "red";
+        }
+    }
+
+    async function submitBooking() {
+        const name = document.getElementById('p_name').value.trim();
+        const phone = document.getElementById('p_phone').value.trim();
+        const date = document.getElementById('p_date').value;
+        const time = document.getElementById('p_time').value;
+        let note = document.getElementById('p_note').value.trim();
+        const btn = document.getElementById('btn_submit');
+
+        if (!name || !phone || !time || !date) {
+            alert("Vui lòng điền đầy đủ Họ tên, Số điện thoại, Ngày và Giờ khám!");
+            return;
+        }
+
+        note = note ? `${note} | SĐT: ${phone}` : `SĐT: ${phone}`;
+        btn.disabled = true;
+        btn.innerHTML = "⏳ Đang gửi thông tin...";
+
+        try {
+            await fetch(WEB_APP_URL, {
+                method: "POST",
+                mode: "no-cors",
+                body: JSON.stringify({ 
+                    type: "APPOINTMENT", name: name, time: time, note: note, date: date 
+                })
+            });
+            
+            document.getElementById('booking_form').style.display = 'none';
+            document.getElementById('success_screen').style.display = 'block';
+        } catch (e) {
+            alert("❌ Đã có lỗi xảy ra. Vui lòng thử lại!");
+            btn.disabled = false;
+            btn.innerHTML = "XÁC NHẬN ĐẶT LỊCH";
+        }
+    }
+
+    window.onload = () => {
+        setDefaultDate();
+        loadAvailableTimes();
+    };
+</script>
+
+</body>
+</html>

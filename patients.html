@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ Sơ Bệnh Nhân - BS. Trương Anh Khoa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #7eb6e2; 
+            --primary-dark: #5a94c5; 
+            --primary-soft: #f0f7ff;
+            --bg: #f8fbfe; 
+            --white: #ffffff; 
+            --text-main: #1e293b; 
+            --text-sub: #64748b; 
+            --border: #e2e8f0;
+            --orange: #ea580c;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+        body { background: var(--bg); color: var(--text-main); padding: 40px; }
+
+        .container { width: 100%; max-width: 1300px; margin: 0 auto; }
+
+        /* HEADER */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h1 { color: var(--primary-dark); font-weight: 800; font-size: 28px; display: flex; align-items: center; gap: 12px; }
+        
+        .btn-back { 
+            text-decoration: none; background: #fff; color: var(--primary-dark); padding: 10px 20px; 
+            border-radius: 12px; font-weight: 700; border: 1.5px solid var(--primary); transition: 0.3s; 
+            font-size: 14px; display: flex; align-items: center; gap: 8px; cursor: pointer;
+        }
+        .btn-back:hover { background: var(--primary); color: #fff; transform: translateY(-2px); }
+
+        /* TABLE CARD */
+        .card { background: #fff; border-radius: 24px; padding: 30px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.02); }
+        
+        .search-box { margin-bottom: 25px; }
+        .search-box input { 
+            width: 100%; padding: 14px 20px; border: 1.5px solid var(--border); border-radius: 14px; 
+            font-size: 15px; outline: none; transition: 0.3s; background: var(--bg);
+        }
+        .search-box input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(126, 182, 226, 0.1); }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { 
+            text-align: left; padding: 15px; background: var(--primary-soft); color: var(--primary-dark); 
+            font-weight: 800; border-bottom: 2px solid var(--border); text-transform: uppercase; font-size: 11px;
+        }
+        td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
+        
+        /* CLICKABLE CODE */
+        .patient-code { 
+            color: var(--primary-dark); 
+            font-weight: 800; 
+            text-decoration: underline; 
+            cursor: pointer; 
+            background: var(--primary-soft);
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+        .patient-code:hover { background: var(--primary); color: white; }
+
+        .vat-badge {
+            display: inline-block;
+            background: #fff7ed;
+            color: var(--orange);
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 5px;
+            border: 1px solid #fed7aa;
+        }
+
+        /* MODAL */
+        .modal { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; 
+        }
+        .modal-body { 
+            background: #fff; width: 90%; max-width: 850px; border-radius: 25px; padding: 40px; 
+            position: relative; max-height: 85vh; overflow-y: auto; 
+        }
+        .close-modal { position: absolute; top: 20px; right: 20px; font-size: 28px; cursor: pointer; color: var(--text-sub); }
+
+        .vat-info-card {
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-left: 5px solid var(--orange);
+        }
+
+        .history-item { 
+            background: var(--bg); padding: 20px; border-radius: 15px; margin-bottom: 15px; 
+            border-left: 5px solid var(--primary); 
+        }
+        .history-date { font-weight: 800; color: var(--primary-dark); margin-bottom: 8px; font-size: 14px; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 5px; text-transform: uppercase; }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; outline: none; }
+        .form-group input:focus { border-color: var(--primary); }
+
+        .btn-edit { background: var(--primary-soft); color: var(--primary-dark); border: none; padding: 6px 12px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 12px; }
+        .btn-edit:hover { background: var(--primary); color: white; }
+
+        .loading { text-align: center; padding: 50px; color: var(--text-sub); font-style: italic; }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>📂 HỒ SƠ BỆNH NHÂN</h1>
+        <a href="dashboard.html" class="btn-back">🏠 TRANG CHỦ</a>
+    </div>
+
+    <div class="card">
+        <div class="search-box">
+            <input type="text" id="searchInput" onkeyup="filterPatients()" placeholder="Tìm theo tên, mã hồ sơ hoặc mã số thuế...">
+        </div>
+
+        <div id="tableContainer">
+            <div class="loading">Đang tải danh sách bệnh nhân...</div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL LỊCH SỬ KHÁM & VAT -->
+<div id="historyModal" class="modal">
+    <div class="modal-body">
+        <span class="close-modal" onclick="closeModal('historyModal')">&times;</span>
+        <div style="border-bottom: 2px solid var(--primary); padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: flex-end;">
+            <div>
+                <h2 style="color: var(--primary-dark); margin: 0;">LỊCH SỬ KHÁM BỆNH</h2>
+                <p id="patientInfo" style="font-weight: 600; color: var(--text-sub); margin-top: 5px;"></p>
+            </div>
+            <button class="btn-edit" id="btnOpenEdit" style="padding: 10px 20px;">CẬP NHẬT THÔNG TIN VAT</button>
+        </div>
+
+        <!-- THÔNG TIN VAT (NẾU CÓ) -->
+        <div id="vatDisplay" class="vat-info-card" style="display: none;">
+            <h4 style="color: var(--orange); font-size: 13px; margin-bottom: 10px;">🏢 THÔNG TIN XUẤT HÓA ĐƠN ĐỎ</h4>
+            <div style="font-size: 14px; line-height: 1.6;">
+                <p><b>Công Ty:</b> <span id="view_vat_company"></span></p>
+                <p><b>MST:</b> <span id="view_vat_id"></span></p>
+                <p><b>Địa Chỉ:</b> <span id="view_vat_addr"></span></p>
+            </div>
+        </div>
+        
+        <div id="historyContent">
+            <!-- Danh sách các lần khám -->
+        </div>
+
+        <div style="margin-top: 30px; text-align: right;">
+            <button class="btn-back" onclick="closeModal('historyModal')">ĐÓNG</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CẬP NHẬT VAT -->
+<div id="editModal" class="modal">
+    <div class="modal-body" style="max-width: 500px;">
+        <span class="close-modal" onclick="closeModal('editModal')">&times;</span>
+        <h2 style="color: var(--primary-dark); margin-bottom: 20px; border-bottom: 2px solid var(--primary); padding-bottom: 10px;">THÔNG TIN VAT</h2>
+        
+        <input type="hidden" id="edit_patient_ma">
+        <div class="form-group">
+            <label>Tên Công Ty</label>
+            <input type="text" id="vat_company" placeholder="CÔNG TY TNHH...">
+        </div>
+        <div class="form-group">
+            <label>Mã Số Thuế</label>
+            <input type="text" id="vat_id" placeholder="Mã số thuế...">
+        </div>
+        <div class="form-group">
+            <label>Địa Chỉ Hóa Đơn</label>
+            <textarea id="vat_addr" rows="3" style="width:100%; padding:12px; border:1px solid var(--border); border-radius:10px;" placeholder="Địa chỉ đăng ký kinh doanh..."></textarea>
+        </div>
+
+        <button class="btn-back" style="width: 100%; background: var(--primary); color: white; border: none; padding: 15px;" onclick="saveVAT()">LƯU THÔNG TIN</button>
+    </div>
+</div>
+
+<script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx3N3S7CKPWVs-izPGcahyw-6DDM4yvNpIlpQyDR9ad0qVpylBbX4Yf2NJ3CQ-4BJYx/exec";
+    let allPatients = [];
+    let allHistory = [];
+
+    async function loadData() {
+        if (WEB_APP_URL.includes("DÁN")) return;
+        try {
+            const res = await fetch(WEB_APP_URL + "?t=" + Date.now());
+            const data = await res.json();
+            allPatients = data.patients || [];
+            allHistory = data.history || [];
+            renderTable(allPatients);
+        } catch (e) {
+            document.getElementById('tableContainer').innerHTML = "<div class='loading' style='color:red'>❌ Lỗi kết nối hệ thống!</div>";
+        }
+    }
+
+    function renderTable(data) {
+        if (data.length === 0) {
+            document.getElementById('tableContainer').innerHTML = "<div class='loading'>Không có dữ liệu bệnh nhân.</div>";
+            return;
+        }
+
+        let html = `
+            <table>
+                <thead>
+                    <tr>
+                        <th width="120">Mã BN</th>
+                        <th width="250">Họ và Tên</th>
+                        <th width="100">Giới tính</th>
+                        <th width="150">Số điện thoại</th>
+                        <th>Địa chỉ</th>
+                        <th width="100">Tác vụ</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        data.forEach(p => {
+            const hasVAT = p.vat_id || false;
+            html += `
+                <tr>
+                    <td>
+                        <span class="patient-code" onclick="showHistory('${p.ma}', '${p.ten}')">${p.ma || '---'}</span>
+                        ${hasVAT ? '<span class="vat-badge">VAT</span>' : ''}
+                    </td>
+                    <td><b>${p.ten}</b></td>
+                    <td>${p.gioitinh || '---'}</td>
+                    <td>${p.sdt || '---'}</td>
+                    <td style="color:var(--text-sub)">${p.diachi || '---'}</td>
+                    <td>
+                        <button class="btn-edit" onclick="openEditVAT('${p.ma}')">Sửa VAT</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        html += `</tbody></table>`;
+        document.getElementById('tableContainer').innerHTML = html;
+    }
+
+    function showHistory(maBN, tenBN) {
+        const modal = document.getElementById('historyModal');
+        const content = document.getElementById('historyContent');
+        const patient = allPatients.find(p => p.ma === maBN);
+        
+        document.getElementById('patientInfo').innerText = `Bệnh nhân: ${tenBN} (${maBN})`;
+        document.getElementById('btnOpenEdit').onclick = () => openEditVAT(maBN);
+
+        const vatBox = document.getElementById('vatDisplay');
+        if (patient && patient.vat_id) {
+            vatBox.style.display = 'block';
+            document.getElementById('view_vat_company').innerText = patient.vat_company || '---';
+            document.getElementById('view_vat_id').innerText = patient.vat_id || '---';
+            document.getElementById('view_vat_addr').innerText = patient.vat_addr || '---';
+        } else {
+            vatBox.style.display = 'none';
+        }
+        
+        const records = allHistory.filter(h => h.ma === maBN || h.ten.toLowerCase().trim() === tenBN.toLowerCase().trim());
+
+        if (records.length === 0) {
+            content.innerHTML = "<div class='loading'>Bệnh nhân này chưa có lịch sử khám bệnh.</div>";
+        } else {
+            content.innerHTML = records.reverse().map(r => `
+                <div class="history-item">
+                    <div class="history-date">📅 Ngày khám: ${r.ngay}</div>
+                    <div style="margin-bottom:10px;"><b>Chẩn đoán:</b> ${r.chanDoan || 'Không có'}</div>
+                    <div style="font-size:13px; color:var(--text-sub); border-top:1px solid #eee; padding-top:10px;">
+                        <b>💊 Thuốc & Dịch vụ:</b><br>${r.thuoc ? r.thuoc.replace(/\n/g, '<br>') : 'Không có dữ liệu'}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        modal.style.display = 'flex';
+    }
+
+    function openEditVAT(maBN) {
+        const patient = allPatients.find(p => p.ma === maBN);
+        if (!patient) return;
+        document.getElementById('edit_patient_ma').value = maBN;
+        document.getElementById('vat_company').value = patient.vat_company || "";
+        document.getElementById('vat_id').value = patient.vat_id || "";
+        document.getElementById('vat_addr').value = patient.vat_addr || "";
+        document.getElementById('editModal').style.display = 'flex';
+    }
+
+    async function saveVAT() {
+        const ma = document.getElementById('edit_patient_ma').value;
+        const payload = {
+            type: "UPDATE_PATIENT_VAT",
+            ma: ma,
+            vat_company: document.getElementById('vat_company').value,
+            vat_id: document.getElementById('vat_id').value,
+            vat_addr: document.getElementById('vat_addr').value
+        };
+
+        // Gửi dữ liệu về Google Sheets
+        try {
+            await fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) });
+            alert("Đã cập nhật thông tin VAT thành công!");
+            loadData(); // Tải lại dữ liệu
+            closeModal('editModal');
+        } catch (e) {
+            alert("Lỗi khi cập nhật dữ liệu!");
+        }
+    }
+
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    function filterPatients() {
+        const input = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = allPatients.filter(p => 
+            p.ten.toLowerCase().includes(input) || 
+            (p.ma && p.ma.toLowerCase().includes(input))
+        );
+        renderTable(filtered);
+    }
+
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) event.target.style.display = 'none';
+    }
+
+    window.onload = loadData;
+</script>
+
+</body>
+</html>

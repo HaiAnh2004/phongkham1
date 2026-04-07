@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - BS. Trương Anh Khoa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #7eb6e2;
+            --primary-dark: #5a94c5;
+            --primary-soft: #f0f7ff;
+            --bg: #f8fbfe;
+            --white: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 40px 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* WELCOME HEADER */
+        .welcome-header {
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .welcome-header h1 {
+            font-weight: 800;
+            font-size: 32px;
+            color: var(--primary-dark);
+            letter-spacing: -0.5px;
+        }
+
+        .welcome-header p {
+            color: var(--text-sub);
+            font-weight: 500;
+            margin-top: 5px;
+        }
+
+        .date-chip {
+            background: var(--white);
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--primary-dark);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        /* GRID LAYOUT */
+        .grid-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 28px;
+            padding: 35px;
+            text-decoration: none;
+            color: inherit;
+            border: 1px solid var(--border);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.02);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: var(--primary);
+            opacity: 0;
+            transition: 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(126, 182, 226, 0.12);
+            border-color: var(--primary);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .icon-box {
+            width: 60px;
+            height: 60px;
+            background: var(--primary-soft);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: var(--primary-dark);
+            margin-bottom: 5px;
+        }
+
+        .card h3 {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .card p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-sub);
+            font-weight: 400;
+        }
+
+        .card-footer {
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--primary-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* SPECIFIC CARD ACCENTS */
+        .card.finance { border-bottom: 4px solid #10b981; }
+        .card.finance .icon-box { background: #dcfce7; color: #10b981; }
+
+        .card.inventory { border-bottom: 4px solid #f59e0b; }
+        .card.inventory .icon-box { background: #fef3c7; color: #d97706; }
+
+        .card.appointment { border-bottom: 4px solid #6366f1; }
+        .card.appointment .icon-box { background: #e0e7ff; color: #6366f1; }
+
+        /* FOOTER */
+        .footer {
+            margin-top: 60px;
+            text-align: center;
+            color: var(--text-sub);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .grid-dashboard { grid-template-columns: 1fr; }
+            .welcome-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header class="welcome-header">
+        <div>
+            <h1>Chào bác sĩ Khoa! 👋</h1>
+            <p>Hôm nay bác sĩ muốn quản lý mục nào?</p>
+        </div>
+        <div class="date-chip" id="current_date">Đang tải...</div>
+    </header>
+
+    <div class="grid-dashboard">
+        <!-- PHÒNG KHÁM -->
+        <a href="pk.html" class="card">
+            <div class="icon-box">🩺</div>
+            <h3>Phòng Khám Bác Sĩ</h3>
+            <p>Thực hiện khám bệnh, kê đơn thuốc, chỉ định dịch vụ và in ấn toa thuốc cho bệnh nhân.</p>
+            <div class="card-footer">Vào khám ngay →</div>
+        </a>
+
+        <!-- TÀI CHÍNH & THUẾ -->
+        <a href="tai_chinh.html" class="card finance">
+            <div class="icon-box">📊</div>
+            <h3>Tài Chính & Thuế</h3>
+            <p>Đối soát doanh thu, hạch toán chi phí vận hành và tính toán lợi nhuận để báo cáo thuế theo tháng/quý.</p>
+            <div class="card-footer">Xem báo cáo →</div>
+        </a>
+
+        <!-- QUẢN LÝ KHO -->
+        <a href="kho_thuoc.html" class="card inventory">
+            <div class="icon-box">📦</div>
+            <h3>Quản Lý Kho Thuốc</h3>
+            <p>Kiểm soát tồn kho theo lô (FIFO), nhập thuốc mới và xử lý thuốc hoàn trả từ các ca hủy.</p>
+            <div class="card-footer">Quản lý kho →</div>
+        </a>
+
+        <!-- LỊCH HẸN -->
+        <a href="lich_hen_phong_kham.html" class="card appointment">
+            <div class="icon-box">📅</div>
+            <h3>Lịch Hẹn & Tiếp Đón</h3>
+            <p>Xem danh sách bệnh nhân đặt lịch online và đăng ký lịch khám mới cho khách tại quầy.</p>
+            <div class="card-footer">Xem lịch hẹn →</div>
+        </a>
+
+        <!-- HỒ SƠ BỆNH NHÂN -->
+        <a href="patients.html" class="card">
+            <div class="icon-box">📂</div>
+            <h3>Hồ Sơ Bệnh Nhân</h3>
+            <p>Tra cứu lịch sử khám bệnh chi tiết của từng bệnh nhân và cập nhật thông tin xuất hóa đơn đỏ (VAT).</p>
+            <div class="card-footer">Tra cứu hồ sơ →</div>
+        </a>
+
+        <!-- LỊCH SỬ HÓA ĐƠN -->
+        <a href="hoa_don.html" class="card">
+            <div class="icon-box">🧾</div>
+            <h3>Lịch Sử Hóa Đơn</h3>
+            <p>Xem lại tất cả các giao dịch thanh toán, mã tra cứu hóa đơn và trạng thái thu tiền.</p>
+            <div class="card-footer">Xem lịch sử →</div>
+        </a>
+    </div>
+
+    <footer class="footer">
+        Hệ thống quản lý phòng khám chuyên sâu  • Thiết kế dành riêng cho BS. Trương Anh Khoa
+    </footer>
+</div>
+
+<script>
+    function updateDate() {
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const today = new Date();
+        document.getElementById('current_date').innerText = today.toLocaleDateString('vi-VN', options);
+    }
+    updateDate();
+</script>
+
+</body>
+</html>

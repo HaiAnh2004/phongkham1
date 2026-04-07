@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch Sử Hóa Đơn - BS. Trương Anh Khoa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #7eb6e2; 
+            --primary-dark: #5a94c5; 
+            --primary-soft: #f0f7ff;
+            --bg: #f8fbfe; 
+            --white: #ffffff; 
+            --text-main: #1e293b; 
+            --text-sub: #64748b; 
+            --border: #e2e8f0;
+            --danger: #ef4444;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+        body { background: var(--bg); color: var(--text-main); padding: 40px; }
+
+        .container { width: 100%; max-width: 1200px; margin: 0 auto; }
+
+        /* HEADER */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h1 { color: var(--primary-dark); font-weight: 800; font-size: 28px; }
+        
+        .btn-back { 
+            text-decoration: none; background: #fff; color: var(--primary-dark); padding: 10px 20px; 
+            border-radius: 12px; font-weight: 700; border: 1.5px solid var(--primary); transition: 0.3s; 
+            font-size: 14px; display: flex; align-items: center; gap: 8px;
+        }
+        .btn-back:hover { background: var(--primary); color: #fff; transform: translateY(-2px); }
+
+        /* SEARCH & FILTER */
+        .card { background: #fff; border-radius: 24px; padding: 25px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.02); }
+        .search-box { margin-bottom: 25px; display: flex; gap: 15px; }
+        .search-box input { 
+            flex: 1; padding: 14px 20px; border: 1.5px solid var(--border); border-radius: 14px; 
+            font-size: 15px; outline: none; transition: 0.3s; background: var(--bg);
+        }
+        .search-box input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(126, 182, 226, 0.1); }
+
+        /* TABLE */
+        .bill-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .bill-table th { 
+            text-align: left; padding: 15px; background: var(--primary-soft); color: var(--primary-dark); 
+            font-weight: 800; border-bottom: 2px solid var(--border); text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px;
+        }
+        .bill-table td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
+        
+        .ref-code { font-family: monospace; background: #f1f5f9; padding: 4px 8px; border-radius: 6px; font-weight: 700; color: var(--text-main); font-size: 12px; }
+        .total-cell { font-weight: 800; color: var(--danger); font-size: 15px; }
+        
+        .loading { text-align: center; padding: 50px; color: var(--text-sub); font-style: italic; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>🧾 LỊCH SỬ HÓA ĐƠN</h1>
+        <a href="dashboard.html" class="btn-back">🏠 TRANG CHỦ</a>
+    </div>
+
+    <div class="card">
+        <div class="search-box">
+            <input type="text" id="searchInput" onkeyup="filterBills()" placeholder="Tìm theo tên bệnh nhân hoặc mã hóa đơn (HD...)...">
+        </div>
+
+        <div id="tableContainer">
+            <div class="loading">Đang nạp dữ liệu hóa đơn...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx3N3S7CKPWVs-izPGcahyw-6DDM4yvNpIlpQyDR9ad0qVpylBbX4Yf2NJ3CQ-4BJYx/exec";
+    let allInvoices = [];
+
+    async function fetchInvoices() {
+        if (WEB_APP_URL.includes("DÁN")) return;
+        try {
+            const res = await fetch(WEB_APP_URL + "?t=" + Date.now());
+            const data = await res.json();
+            allInvoices = data.hoadon || [];
+            renderTable(allInvoices);
+        } catch (e) {
+            document.getElementById('tableContainer').innerHTML = "<div class='loading' style='color:red'>❌ Lỗi kết nối hệ thống!</div>";
+        }
+    }
+
+    function renderTable(data) {
+        if (data.length === 0) {
+            document.getElementById('tableContainer').innerHTML = "<div class='loading'>Không có hóa đơn nào được tìm thấy.</div>";
+            return;
+        }
+
+        let html = `
+            <table class="bill-table">
+                <thead>
+                    <tr>
+                        <th width="150">Ngày giờ</th>
+                        <th width="200">Bệnh nhân</th>
+                        <th>Nội dung thanh toán</th>
+                        <th width="150">Tổng tiền</th>
+                        <th width="150">Mã tra cứu</th>
+                    </tr>
+                </thead>
+                <tbody id="billBody">
+        `;
+
+        data.reverse().forEach(item => {
+            html += `
+                <tr>
+                    <td style="color:var(--text-sub); font-size:12px">${item.ngay}</td>
+                    <td><b>${item.ten}</b></td>
+                    <td style="font-size:13px; color:var(--text-sub)">${item.noidung}</td>
+                    <td class="total-cell">${Number(item.tong).toLocaleString()}đ</td>
+                    <td><span class="ref-code">${item.maTraCuu}</span></td>
+                </tr>
+            `;
+        });
+
+        html += `</tbody></table>`;
+        document.getElementById('tableContainer').innerHTML = html;
+    }
+
+    function filterBills() {
+        const input = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = allInvoices.filter(item => 
+            item.ten.toLowerCase().includes(input) || 
+            item.maTraCuu.toLowerCase().includes(input)
+        );
+        renderTable(filtered);
+    }
+
+    window.onload = fetchInvoices;
+</script>
+
+</body>
+</html>
